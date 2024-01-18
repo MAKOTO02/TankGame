@@ -14,7 +14,8 @@ public class BulletCollision : MonoBehaviour
     private GameObject explosion;
     private GameObject explosionCopy;
     public int durationTimes;    // ’e‚Ì’µ’e‰ñ”‚ÌãŒÀ‚ğ’è‚ß‚Ü‚·.
-    public float speed;
+    private float speed;
+    public BulletController BulletController;
     private int count = 0;  // Œ»İ‚ÌÕ“Ë‰ñ”‚ğŠi”[‚µ‚Ä‚¨‚­•Ï”‚Å‚·.
 
     // Start is called before the first frame update
@@ -92,8 +93,7 @@ public class BulletCollision : MonoBehaviour
     }
     void InvalidSpeedCheck()
     {
-
-        float speed = gameObject.GetComponent<Rigidbody>().velocity.magnitude;
+        speed = BulletController.bulletSpeed;
         float maxSpeed = speed + 10.0f;
         float minSpeed = speed - 10.0f;
         if (speed > maxSpeed || speed < minSpeed)

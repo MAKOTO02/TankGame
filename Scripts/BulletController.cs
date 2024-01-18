@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour
@@ -6,22 +7,24 @@ public class BulletController : MonoBehaviour
     // BulletControllerという空のオブジェクトを生成してそれにアタッチしてください.
     // BulletControllerはフィールドの弾の数を制限するためのオブジェクトで、主にその処理を行います.
 
-    private GameObject obj; // Resourcesからプレハブをロードするための仮変数.
+    //-----PRIVATEVARIABLES-----//
+    private GameObject BulletPrefab; // Resourcesからプレハブをロードするための仮変数.
     private GameObject bulletCopy; // 実際に発射される弾.
-    [SerializeField]
-    private SoundManager soundManager; //サウンドマネージャー
-    static readonly int queueLimit = 20;
-    private readonly Queue<GameObject> bulletQue = new Queue<GameObject>(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする.3はQueueの上限.
+    [SerializeField] private SoundManager soundManager; //サウンドマネージャー
+    [SerializeField] private GameObject bullet;   // 弾を発射する起点となる所に(砲台の子オブジェクトとして)くっつけておくオブジェクト.生成などの際に位置を参照する.
+    private static readonly int queueLimit = 20;    // メモリを使いすぎないよう、Queueの上限を決めておく。
+    private readonly Queue<GameObject> bulletQue = new Queue<GameObject>(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする。
+
+    //-----PUBLICVARIABLES-----//
     public int limit = 8;    // 場に存在できる自機の弾の数をここに格納.
-    public Rigidbody Cannon;    // 砲台の向きを取得するために追加.
-    public GameObject bullet;   // 弾を発射する起点となる所に(砲台の子オブジェクトとして)くっつけておくオブジェクト.生成などの際に位置を参照する.
-    public float bulletSpeed = 20;  // 弾の初速を制御する変数.
     public int durationTimes = 3;
+    public float bulletSpeed = 20;  // 弾の初速を制御する変数.
+    public Rigidbody Cannon;    // 砲台の向きを取得するために追加.
 
     // Start is called before the first frame update
     protected virtual void Start()
     {
-        obj = (GameObject)Resources.Load("bullet"); //  プレハブのデータをロード.
+        BulletPrefab = (GameObject)Resources.Load("bullet"); //  プレハブのデータをロード.
         bullet.SetActive(false);    // 目印となるオブジェクトは邪魔なので、activeをfalseにセットしておく.
     }
 
@@ -33,14 +36,14 @@ public class BulletController : MonoBehaviour
     }
 
 
-    void shot()
+    void Shot()
     {
         bulletCopy.transform.position = bullet.transform.position;
         bulletCopy.SetActive(true);
         bulletCopy.GetComponent<Rigidbody>().velocity = -Cannon.transform.up * bulletSpeed;    // -cannon.transform.upは砲台の前向き.
-        bulletCopy.GetComponent<BulletCollision>().speed = bulletSpeed;
         bulletCopy.GetComponent<BulletCollision>().durationTimes = durationTimes;
         soundManager.Play("shot");
+
     }
     void rotateQueue()
     {
@@ -50,8 +53,20 @@ public class BulletController : MonoBehaviour
     void GenerateBulletCopy()
     {
         // 今回は弾が球形なので、弾の回転は考慮せずidentityで生成.
-        bulletCopy = Instantiate(obj, bullet.transform.position, Quaternion.identity);
+        bulletCopy = Instantiate(BulletPrefab, bullet.transform.position, Quaternion.identity);
         bulletCopy.GetComponent<BulletCollision>().soundManager = soundManager;
+        try
+        {
+            bulletCopy.GetComponent<BulletCollision>().BulletController = GetComponent<BulletController>();
+            if (bulletCopy.GetComponent<BulletCollision>() == null)
+            {
+                Debug.Log("BulletController.cs: BulletCopyの初期化に失敗しています");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log("BulletController.cs: " + e.Message);
+        }
         bulletQue.Enqueue(bulletCopy);
     }
     protected void RecycleShot()
@@ -60,7 +75,7 @@ public class BulletController : MonoBehaviour
         if (bulletQue.Count < limit)
         {
             GenerateBulletCopy();
-            shot();
+            Shot();
         }
         else
         {
@@ -72,7 +87,7 @@ public class BulletController : MonoBehaviour
                 bool CanUseMore = bulletCopy.activeSelf;
                 if (!CanUseMore)
                 {
-                    shot();
+                    Shot();
                     break;
                 }
             }
