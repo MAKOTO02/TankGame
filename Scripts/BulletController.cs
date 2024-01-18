@@ -12,10 +12,11 @@ public class BulletController : MonoBehaviour
     private SoundManager soundManager; //サウンドマネージャー
     static readonly int queueLimit = 20;
     private readonly Queue<GameObject> bulletQue = new Queue<GameObject>(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする.3はQueueの上限.
-    public int limit = 3;    // 場に存在できる自機の弾の数をここに格納.
-    public Rigidbody cannon;    // 砲台の向きを取得するために追加.
+    public int limit = 8;    // 場に存在できる自機の弾の数をここに格納.
+    public Rigidbody Cannon;    // 砲台の向きを取得するために追加.
     public GameObject bullet;   // 弾を発射する起点となる所に(砲台の子オブジェクトとして)くっつけておくオブジェクト.生成などの際に位置を参照する.
     public float bulletSpeed = 20;  // 弾の初速を制御する変数.
+    public int durationTimes = 3;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -28,7 +29,7 @@ public class BulletController : MonoBehaviour
     protected virtual void Update()
     {
         // マウスの左クリックを感知して弾を発射する.
-        if(Input.GetMouseButtonDown(0)) RecycleShot();
+        if (Input.GetMouseButtonDown(0)) RecycleShot();
     }
 
 
@@ -36,7 +37,9 @@ public class BulletController : MonoBehaviour
     {
         bulletCopy.transform.position = bullet.transform.position;
         bulletCopy.SetActive(true);
-        bulletCopy.GetComponent<Rigidbody>().velocity = -cannon.transform.up * bulletSpeed;    // -cannon.transform.upは砲台の前向き.
+        bulletCopy.GetComponent<Rigidbody>().velocity = -Cannon.transform.up * bulletSpeed;    // -cannon.transform.upは砲台の前向き.
+        bulletCopy.GetComponent<BulletCollision>().speed = bulletSpeed;
+        bulletCopy.GetComponent<BulletCollision>().durationTimes = durationTimes;
         soundManager.Play("shot");
     }
     void rotateQueue()
@@ -48,11 +51,11 @@ public class BulletController : MonoBehaviour
     {
         // 今回は弾が球形なので、弾の回転は考慮せずidentityで生成.
         bulletCopy = Instantiate(obj, bullet.transform.position, Quaternion.identity);
-        bulletCopy.GetComponent<BulletCollision>().soundManager = soundManager; 
+        bulletCopy.GetComponent<BulletCollision>().soundManager = soundManager;
         bulletQue.Enqueue(bulletCopy);
     }
     protected void RecycleShot()
-    {  
+    {
         // Queueに入っている弾の数が上限より小さいなら、新しく生成しQueueに追加.
         if (bulletQue.Count < limit)
         {
