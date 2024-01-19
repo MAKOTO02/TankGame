@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+using System.Diagnostics;
 using UnityEngine;
 
 // 簡易的な敵AIです。
@@ -8,9 +8,8 @@ using UnityEngine;
 public class EnemyController : MotionController
 {
     public Rigidbody player;
-    private float l, r;
-    private Vector3 Pos;
-    private Vector3 prePos;
+    public GameObject PlayerCannon;
+    private Vector3 PlayerPosition;
     private int mode = -1;
 
     private IEnumerator ModeChange()
@@ -28,7 +27,6 @@ public class EnemyController : MotionController
     {
         base.Start();
         StartCoroutine(ModeChange());
-        prePos = player.transform.position - Rb.transform.position;
     }
 
     // Update is called once per frame
@@ -36,7 +34,7 @@ public class EnemyController : MotionController
     {
         base.Update();
         // プレイヤーとの相対的な位置を計算.
-        Pos = player.transform.position - Rb.transform.position;
+        PlayerPosition = player.transform.position - thisRigidbody.transform.position;
 
         if (mode == 1)
         {
@@ -52,9 +50,13 @@ public class EnemyController : MotionController
         }
     }
 
-    private void KeepDistance(float distance)
+    /// <summary>
+    /// Adjusts movement based on the player's distance.
+    /// </summary>
+    /// <param name="desiredDistance">The desired distance from the player.</param>
+    private void AdjustMovementBasedOnDistance(float desiredDistance)
     {
-        if (Pos.magnitude > distance)
+        if (PlayerPosition.magnitude > desiredDistance)
         {
             moveInput = 1;
         }
@@ -63,49 +65,54 @@ public class EnemyController : MotionController
             moveInput = -1;
         }
     }
-    private void TargetPlayer()
-    {
-        var signedAngle = Vector3.SignedAngle(Rb.transform.forward, Pos, Vector3.up) * Mathf.PI / 180.0f;
-        turnInput = Mathf.Sin(signedAngle);
-    }
-    private void Attack(float distance)
-    {
 
-        TargetPlayer();
-        KeepDistance(distance);
-    }
-    private void Escape(float distance)
+    /// <summary>
+    /// Initiates an attack by turning towards the player and adjusting movement based on distance.
+    /// </summary>
+    /// <param name="desiredDistance">The desired distance for the attack.</param>
+    private void Attack(float desiredDistance)
     {
-        var signedAngle = (Vector3.SignedAngle(Rb.transform.forward, Pos, Vector3.up) + 90.0f) * Mathf.PI / 180.0f;
-        turnInput = Mathf.Sin(signedAngle);
+        TurnTo(PlayerPosition);
+        AdjustMovementBasedOnDistance(desiredDistance);
+    }
+    /// <summary>
+    /// Maintain a vertical orientation towards the player and perform long-range shooting.
+    /// </summary>
+    /// <param name="desiredDistance">The distance to be maintained.</param>
+    private void Escape(float desiredDistance)
+    {
+        // Face the direction that is perpendicular to the player.
+        TurnTo(PlayerPosition, 90.0f);
 
-        if (Mathf.Abs(Mathf.Cos(Vector3.Angle(Cannon.GetComponent<Rigidbody>().transform.up, Rb.transform.forward) * Mathf.PI / 180.0f)) < 0.2f)
+        // Check conditions for movement.
+        float angleCosine = Mathf.Cos(Vector3.Angle(PlayerCannon.GetComponent<Rigidbody>().transform.up, thisRigidbody.transform.forward) * Mathf.PI / 180.0f);
+
+        if (Mathf.Abs(angleCosine) < 0.2f)
         {
+            // Move when the player's Cannon captures the aircraft or when the player gets too close.
             moveInput = -1;
         }
-        else if (distance > Pos.magnitude)
+        else if (desiredDistance > PlayerPosition.magnitude)
         {
+            // Move when the player is farther away.
             moveInput = 1;
         }
         else
         {
-            moveInput = 0;
+            // Otherwise, move randomly.
+            moveInput = Random.Range(-1.0f, 1.0f);
         }
     }
-    protected override void TurnCannon()
+
+    /// <summary>
+    /// Adjusts the turnInput to face the vector in the specified direction. 
+    /// Apply the correction of the angle in deltaAngle (in degrees, 360-degree system).
+    /// </summary>
+    /// <param name="direction">The direction vector to face.</param>
+    /// <param name="deltaAngle">Additional angle correction (in degrees).</param>
+    void TurnTo(Vector3 direction, float deltaAngle = 0.0f)
     {
-        float distance = Pos.magnitude;
-        if (prePos.magnitude > distance)
-        {
-            l = 100; r = 80;
-        }
-        else
-        {
-            l = 40; r = 0;
-        }
-        torque = Vector3.Cross((Pos + player.velocity * distance / (10.0f + Random.Range(r, l))).normalized, Cannon.GetComponent<Rigidbody>().transform.up);
-        Cannon.GetComponent<Rigidbody>().AddTorque(torque);
-        prePos = Pos;
+        var signedAngle = (Vector3.SignedAngle(thisRigidbody.transform.forward, direction, Vector3.up) + deltaAngle) * Mathf.PI / 180.0f;
+        turnInput = Mathf.Sin(signedAngle);
     }
 }
-

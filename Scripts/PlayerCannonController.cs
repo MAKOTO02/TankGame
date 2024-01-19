@@ -1,7 +1,11 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MotionController
+public class PlayerCannonController : BaseCannonController
 {
+    [SerializeField] private Camera MainCamera;
+
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -11,13 +15,8 @@ public class PlayerController : MotionController
     // Update is called once per frame
     protected override void Update()
     {
-        Receive();
+        AimDirection = MainCamera.transform.forward;
         base.Update();
-    }
-
-    public void Receive()
-    {
-        moveInput = Input.GetAxis("Vertical");
-        turnInput = Input.GetAxis("Horizontal");
+        TurnCannon();
     }
 }

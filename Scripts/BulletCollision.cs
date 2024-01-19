@@ -55,10 +55,12 @@ public class BulletCollision : MonoBehaviour
                 Debug.Log("ゲームオーバー");
             }
             DisableGameObject(collision.gameObject);
+            return;
         }
-        else if (ShouldExplode())
+        if (ShouldExplode())
         {
             Explode();
+            return;
         }
         else
         {
