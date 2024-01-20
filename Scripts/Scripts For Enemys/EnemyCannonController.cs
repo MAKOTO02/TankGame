@@ -7,13 +7,13 @@ public class EnemyCannonController : BaseCannonController
     protected Vector3 PlayerVelocity;
 
     [SerializeField] private BulletController bulletController;
-    private float bulletSpeed => bulletController?.bulletSpeed ?? 0f;
+    private float BulletSpeed => bulletController?.bulletSpeed ?? 0f;
 
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
-        Debug.Log($"Bullet Speed: {bulletSpeed}");
+        Debug.Log($"Bullet Speed: {BulletSpeed}");
     }
 
     // Update is called once per frame
@@ -43,7 +43,7 @@ public class EnemyCannonController : BaseCannonController
             minRange = 0.5f;
         }
 
-        float estimatedTime = (PlayerPosition.magnitude / bulletSpeed) * Random.Range(minRange, maxRange);
+        float estimatedTime = (PlayerPosition.magnitude / BulletSpeed) * Random.Range(minRange, maxRange);
         AimDirection = PlayerPosition + PlayerVelocity * estimatedTime;
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class PlayerController : MotionController
-{
+{   
     // Start is called before the first frame update
     protected override void Start()
     {

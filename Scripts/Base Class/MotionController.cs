@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 public class MotionController : MonoBehaviour
@@ -17,9 +16,6 @@ public class MotionController : MonoBehaviour
     protected float turnInput = 0;
     protected Vector3 torque;
 
-    //----- PRIVATE METHODS -----//
-
-    //----- PUBLIC METHODS -----//
 
     protected virtual void Start()
     {
@@ -33,14 +29,14 @@ public class MotionController : MonoBehaviour
 
     protected virtual void Update()
     {
-        Move(); Turn(); AnimationSet();
+        Move();Turn();AnimationSet();
     }
 
     void Move()
     {
         // すぐ下に地面があるかを判定
         // 地面の判定については、Deubug等していないので、挙動は不明です.
-        if (thisRigidbody != null)
+        if(thisRigidbody != null)
         {
             if (Physics.Raycast(transform.position, Vector3.down, out _, 1.0f))
             {
@@ -54,18 +50,18 @@ public class MotionController : MonoBehaviour
                 }
             }
         }
-
+        
     }
     void Turn()
     {
-        if (thisRigidbody != null)
+        if(thisRigidbody != null)
         {
             thisRigidbody.MoveRotation(thisRigidbody.rotation * Quaternion.Euler(0, turnInput * TurnSpeed * Time.deltaTime, 0));
         }
     }
     void AnimationSet()
     {
-        if (Anima != null)
+        if(Anima != null)
         {
             Anima.SetFloat("MoveSpeed", 0.4f * thisRigidbody.velocity.magnitude);  // moveSpeed が最大(= 20) のとき再生速度 8 になるように補正して、再生速度をセット
             Anima.SetFloat("TurnSpeed", 4.0f);  // 今回、ターンのアニメーションでは加速がないので、一定の値を採用します.
