@@ -20,8 +20,9 @@ public class SoundManager : Singleton<SoundManager>
     //別名(name)をキーとした管理用Dictionary
     private Dictionary<string, SoundData> soundDictionary = new Dictionary<string, SoundData>();
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         //auidioSourceList配列の数だけAudioSourceを自分自身に生成して配列に格納
         for (var i = 0; i < audioSourceList.Length; ++i)
         {

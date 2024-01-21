@@ -1,7 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(BoxCollider))]
 public class MotionController : MonoBehaviour
 {
     //------ PUBLIC VARIABLES ------//
@@ -20,6 +20,7 @@ public class MotionController : MonoBehaviour
     protected virtual void Start()
     {
         thisRigidbody = GetComponent<Rigidbody>();
+        thisRigidbody.mass = 100.0f;
         Anima = GetComponent<Animator>();
         if (thisRigidbody == null || Anima == null)
         {
@@ -29,39 +30,33 @@ public class MotionController : MonoBehaviour
 
     protected virtual void Update()
     {
-        Move();Turn();AnimationSet();
+        Move(); Turn(); AnimationSet();
     }
 
     void Move()
     {
         // すぐ下に地面があるかを判定
         // 地面の判定については、Deubug等していないので、挙動は不明です.
-        if(thisRigidbody != null)
+
+        if (Physics.Raycast(transform.position, Vector3.down, out _, 1.0f))
         {
-            if (Physics.Raycast(transform.position, Vector3.down, out _, 1.0f))
+            if (thisRigidbody.velocity.magnitude < MoveSpeedLimit)
             {
-                if (thisRigidbody.velocity.magnitude < MoveSpeedLimit)
-                {
-                    thisRigidbody.AddForce(transform.forward * Accel * moveInput, ForceMode.Force);    // rb.MovePositionだと壁を貫通するので変更
-                }
-                if (Mathf.Abs(moveInput) < 0.05f)
-                {
-                    thisRigidbody.velocity = Vector3.zero;
-                }
+                thisRigidbody.AddForce(transform.forward * Accel * moveInput, ForceMode.Force);    // rb.MovePositionだと壁を貫通するので変更
             }
+            DeleteSpeed();
         }
-        
     }
     void Turn()
     {
-        if(thisRigidbody != null)
+        if (thisRigidbody != null)
         {
             thisRigidbody.MoveRotation(thisRigidbody.rotation * Quaternion.Euler(0, turnInput * TurnSpeed * Time.deltaTime, 0));
         }
     }
     void AnimationSet()
     {
-        if(Anima != null)
+        if (Anima != null)
         {
             Anima.SetFloat("MoveSpeed", 0.4f * thisRigidbody.velocity.magnitude);  // moveSpeed が最大(= 20) のとき再生速度 8 になるように補正して、再生速度をセット
             Anima.SetFloat("TurnSpeed", 4.0f);  // 今回、ターンのアニメーションでは加速がないので、一定の値を採用します.
@@ -97,6 +92,16 @@ public class MotionController : MonoBehaviour
                 Anima.SetBool("TurnL", false);
                 Anima.SetBool("TurnR", false);
             }
+        }
+    }
+
+    void DeleteSpeed()
+    {
+        if (Mathf.Abs(moveInput) < 0.05f)
+        {
+            thisRigidbody.velocity = new Vector3(0.0f, thisRigidbody.velocity.y, 0.0f);
+            // 以下に元のコードを置いておきます.
+            // thisRigidbody.velocity = Vector3.zero;
         }
     }
 }

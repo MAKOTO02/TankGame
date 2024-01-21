@@ -5,7 +5,7 @@ using UnityEngine;
 /// bulletの初期化の際に渡さなければいけない情報をここで一括管理します。
 /// bulletクラスの変数を併せて確認してください。
 /// </summary>
-public class BuleltInstantiateInfo 
+public class BuleltInstantiateInfo
 {
     public Bullet bullet;
     public BulletCollisionManager collisionManager;
@@ -18,7 +18,7 @@ public class BuleltInstantiateInfo
         this.soundManager = soundManager;
     }
 
-    public void SetUpBullet(Bullet bullet)
+    public void SetUpBullet(ref Bullet bullet)
     {
         bullet.soundManager = this.soundManager;
     }
@@ -32,7 +32,7 @@ public class BulletController : MonoBehaviour
     //-----PRIVATEVARIABLES-----//
     private GameObject bulletPrefab; // Resourcesからプレハブをロードするための仮変数.
     private GameObject bulletCopy; // 実際に発射される弾.
-    
+
     [SerializeField] private GameObject bulletMark;   // 弾を発射する起点となる所に(砲台の子オブジェクトとして)くっつけておくオブジェクト.生成などの際に位置を参照する.
     private static readonly int queueLimit = 20;    // メモリを使いすぎないよう、Queueの上限を決めておく。
     private readonly Queue<GameObject> bulletQue = new(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする。
@@ -55,7 +55,7 @@ public class BulletController : MonoBehaviour
     protected virtual void Update()
     {
         // マウスの左クリックを感知して弾を発射する.
-        if(Input.GetMouseButtonDown(0)) RecycleShot();
+        if (Input.GetMouseButtonDown(0)) RecycleShot();
     }
 
 
@@ -66,8 +66,25 @@ public class BulletController : MonoBehaviour
         bulletCopy.GetComponent<Bullet>().SetShouldExplode(false);
         bulletCopy.GetComponent<BulletSpeedManager>().SetSpeed(bulletSpeed);
         bulletCopy.GetComponent<Rigidbody>().velocity = -Cannon.transform.up * bulletSpeed;    // -cannon.transform.upは砲台の前向き.
-        soundManager.Play("shot");
-        
+        try
+        {
+            soundManager.Play("shot");
+        }
+        catch
+        {
+
+        }
+
+        finally
+        {
+            if (bulletCopy.GetComponent<Bullet>().soundManager == null)
+            {
+                Debug.Log("サウンドマネージャーの参照に失敗しました");
+                Debug.Log("BulletControllerにSoundManagerを渡してください");
+            }
+            bulletQue.Enqueue(bulletCopy);
+        }
+
 
     }
     void RotateQueue()
@@ -83,16 +100,24 @@ public class BulletController : MonoBehaviour
         try
         {
             Bullet bullet = bulletCopy.GetComponent<Bullet>();
-            info.SetUpBullet(bullet);
+            info.SetUpBullet(ref bullet);
         }
-        catch(System.Exception ex)
+        catch (System.Exception ex)
         {
             Debug.Log(ex.Message);
         }
-        bulletQue.Enqueue(bulletCopy);
+        finally
+        {
+            if (bulletCopy.GetComponent<Bullet>().soundManager == null)
+            {
+                Debug.Log("サウンドマネージャーの参照に失敗しました");
+                Debug.Log("BulletControllerにSoundManagerを渡してください");
+            }
+            bulletQue.Enqueue(bulletCopy);
+        }
     }
     protected void RecycleShot()
-    {  
+    {
         // Queueに入っている弾の数が上限より小さいなら、新しく生成しQueueに追加.
         if (bulletQue.Count < limit)
         {

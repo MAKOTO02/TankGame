@@ -42,11 +42,22 @@ public class Bullet : MonoBehaviour
     public void Explode()
     {
         explosionCopy = Instantiate(explosion, transform.position, Quaternion.identity);
-        soundManager.Play("hit");
-        Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
-        InitiateBullet();
-        GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
-        if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);
+        try
+        {
+            soundManager.Play("hit");
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log("Bullet.cs‚ÉSoundManager‚ð“n‚¹‚Ä‚¢‚Ü‚¹‚ñ");
+            Debug.Log(e.Message);
+        }
+        finally
+        {
+            if (explosionCopy != null) Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
+            InitiateBullet();
+            GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
+            if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);
+        }
     }
     void InitiateBullet()
     {
