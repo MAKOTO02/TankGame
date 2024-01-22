@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Bulletクラスは、弾の速度と弾の反射回数を管理します。
@@ -12,11 +13,13 @@ public class Bullet : MonoBehaviour
     private GameObject explosion;
     private GameObject explosionCopy;
 
-    public SoundManager soundManager; //サウンドマネージャー
+    private SoundManager soundManager; //サウンドマネージャー
 
     // Start is called before the first frame update
     void Start()
     {
+        soundManager = SoundManager.Instance;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
         ShouldExplode = false;
         explosion = (GameObject)Resources.Load("Explosion");
     }
@@ -32,6 +35,11 @@ public class Bullet : MonoBehaviour
         }
     }
 
+    void OnSceneUnloaded(Scene scene)
+    {
+        InitiateBullet();
+    }
+
     // 外部からdesiredSpeedを設定するメソッド
 
     public void SetShouldExplode(bool setting)
@@ -42,22 +50,11 @@ public class Bullet : MonoBehaviour
     public void Explode()
     {
         explosionCopy = Instantiate(explosion, transform.position, Quaternion.identity);
-        try
-        {
-            soundManager.Play("hit");
-        }
-        catch (System.Exception e)
-        {
-            Debug.Log("Bullet.csにSoundManagerを渡せていません");
-            Debug.Log(e.Message);
-        }
-        finally
-        {
-            if (explosionCopy != null) Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
-            InitiateBullet();
-            GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
-            if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);
-        }
+        soundManager.Play("hit");       
+        if(explosionCopy != null) Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
+        InitiateBullet();
+        GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
+        if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);
     }
     void InitiateBullet()
     {

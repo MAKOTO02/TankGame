@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyCannonController : BaseCannonController
 {
-    [SerializeField] protected private Rigidbody playerRigidbody;
+    public Rigidbody targetRigidbody;
     protected Vector3 PlayerPosition;
     protected Vector3 PlayerVelocity;
 
@@ -20,15 +20,18 @@ public class EnemyCannonController : BaseCannonController
     protected override void Update()
     {
         base.Update();
-        CalculateTargetDirection();
-        TurnCannon();
+        if (targetRigidbody != null)
+        {
+            CalculateTargetDirection();
+            TurnCannon();
+        }
     }
 
     void CalculateTargetDirection()
     {
-        PlayerPosition = playerRigidbody.transform.position - GetComponent<Rigidbody>().transform.position;
-        PlayerVelocity = playerRigidbody.velocity;
-        if (playerRigidbody == null)
+        PlayerPosition = targetRigidbody.transform.position - GetComponent<Rigidbody>().transform.position;
+        PlayerVelocity = targetRigidbody.velocity;
+        if (targetRigidbody == null)
         {
             Debug.Log("Playerのオブジェクトにリジッドボディを追加し、このスクリプトに渡してください");
             return;

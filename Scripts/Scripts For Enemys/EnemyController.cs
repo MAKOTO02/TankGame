@@ -5,8 +5,9 @@ using UnityEngine;
 // EscapeとAttackの二つのモードを10秒ごとに切り替えます.
 public class EnemyController : MotionController
 {
-    public Rigidbody player;
-    public GameObject PlayerCannon;
+    public Rigidbody targetRigidbody;
+    public GameObject targetCannon;
+    private GameObject MyCannon; 
     private Vector3 PlayerPosition;
     private int mode = -1;
 
@@ -23,6 +24,8 @@ public class EnemyController : MotionController
     // Start is called before the first frame update
     protected override void Start()
     {
+        targetRigidbody = null;
+        MyCannon = transform.Find("Cannon").gameObject;
         base.Start();
         StartCoroutine(ModeChange());
     }
@@ -31,20 +34,33 @@ public class EnemyController : MotionController
     protected override void Update()
     {
         base.Update();
+        MyCannon.GetComponent<EnemyCannonController>().targetRigidbody = targetRigidbody;
         // プレイヤーとの相対的な位置を計算.
-        PlayerPosition = player.transform.position - thisRigidbody.transform.position;
+        if(targetRigidbody != null)
+        {
+            PlayerPosition = targetRigidbody.transform.position - thisRigidbody.transform.position;
 
-        if (mode == 1)
-        {
-            Attack(50.0f);
+            if (mode == 1)
+            {
+                Attack(50.0f);
+            }
+            else if (mode == -1)
+            {
+                Escape(100.0f);
+            }
+            else
+            {
+                Debug.Log(mode);
+            }
         }
-        else if (mode == -1)
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player"))
         {
-            Escape(100.0f);
-        }
-        else
-        {
-            Debug.Log(mode);
+            targetRigidbody = other.gameObject.GetComponent<Rigidbody>();
+            targetCannon = other.gameObject.transform.Find("Cannon").gameObject;
         }
     }
 
@@ -83,7 +99,7 @@ public class EnemyController : MotionController
         TurnTo(PlayerPosition, 90.0f);
 
         // Check conditions for movement.
-        float angleCosine = Mathf.Cos(Vector3.Angle(PlayerCannon.GetComponent<Rigidbody>().transform.up, thisRigidbody.transform.forward) * Mathf.PI / 180.0f);
+        float angleCosine = Mathf.Cos(Vector3.Angle(targetCannon.GetComponent<Rigidbody>().transform.up, thisRigidbody.transform.forward) * Mathf.PI / 180.0f);
 
         if (Mathf.Abs(angleCosine) < 0.2f)
         {

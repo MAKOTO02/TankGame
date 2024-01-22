@@ -1,6 +1,7 @@
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class BaseCannonController : MonoBehaviour
 {
     protected Vector3 CannonForard;
@@ -9,18 +10,10 @@ public class BaseCannonController : MonoBehaviour
     // Start is called before the first frame update
     protected virtual void Start()
     {        
-        try
-        {
-            Rigidbody rb = GetComponent<Rigidbody>();
-            rb.angularDrag = 5.0f;
-            rb.useGravity = false;
-            CannonForard = -gameObject.GetComponent<Rigidbody>().transform.up;
-        }
-        catch(System.Exception e)
-        {
-            Debug.Log("BaseCAnnonController.cs: " + e.Message);
-            Debug.Log("CannonオブジェクトにRigidbodyを追加してください");
-        }
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.angularDrag = 5.0f;
+        rb.useGravity = false;
+        CannonForard = -gameObject.GetComponent<Rigidbody>().transform.up;
         AimDirection = CannonForard;
     }
 

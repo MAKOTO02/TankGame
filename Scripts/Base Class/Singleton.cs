@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    private static T instance;
+    private static volatile T instance;
     private static readonly object lockObject = new object();
 
     public static T Instance
@@ -43,6 +43,5 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             Debug.LogWarning("シングルトンオブジェクトの競合が確認されました");
             return;
         }
-        DontDestroyOnLoad(gameObject);
     }
 }

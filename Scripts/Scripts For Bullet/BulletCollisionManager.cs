@@ -1,10 +1,10 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 /// <summary>
 /// 衝突時の処理を行います。
 /// </summary>
 [RequireComponent (typeof(Bullet))]
 [RequireComponent(typeof(SphereCollider))]
-
 public class BulletCollisionManager : MonoBehaviour
 {
     // BulletCollision は弾の Active と非 Active 状態を管理し、適切なときにサウンドやエフェクトを発生させます。.
@@ -17,10 +17,13 @@ public class BulletCollisionManager : MonoBehaviour
     private Bullet bullet;
     public BulletController buletController;
     private GameObject gameObjectToDisable;
+    private SoundManager soundManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        soundManager = SoundManager.Instance;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
         gameObject.SetActive(true);
 
         // 弾の特性をここで付与しておきます。
@@ -58,6 +61,11 @@ public class BulletCollisionManager : MonoBehaviour
         }
     }
 
+    void OnSceneUnloaded(Scene scene)
+    {
+        ResetCount();
+    }
+
     bool IsPlayerOrEnemyCollision(Collision collision)
     {
         return collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Player");
@@ -77,7 +85,7 @@ public class BulletCollisionManager : MonoBehaviour
         // Your reflection sound logic goes here
         try
         {
-            bullet.soundManager.Play("reflect");
+            soundManager.Play("reflect");
         }
         catch(System.Exception ex)
         {
