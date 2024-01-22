@@ -1,6 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class SoundManager : Singleton<SoundManager>
 {
@@ -14,18 +14,22 @@ public class SoundManager : Singleton<SoundManager>
     [SerializeField]
     private SoundData[] soundDatas;
 
+    [SerializeField]
+    public AudioMixer audioMixer;
+
     //AudioSource（スピーカー）を同時に鳴らしたい音の数だけ用意
     private AudioSource[] audioSourceList = new AudioSource[20];
 
     //別名(name)をキーとした管理用Dictionary
     private Dictionary<string, SoundData> soundDictionary = new Dictionary<string, SoundData>();
 
-    private void Awake()
+    protected override void Awake()
     {
         //auidioSourceList配列の数だけAudioSourceを自分自身に生成して配列に格納
         for (var i = 0; i < audioSourceList.Length; ++i)
         {
             audioSourceList[i] = gameObject.AddComponent<AudioSource>();
+            audioSourceList[i].outputAudioMixerGroup = audioMixer.outputAudioMixerGroup;
         }
 
         //soundDictionaryにセット
