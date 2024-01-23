@@ -15,14 +15,12 @@ public class BulletCollisionManager : MonoBehaviour
     [SerializeField] private int durationTimes = 1;
     private int collisionCount = 0;
     private Bullet bullet;
-    public BulletController buletController;
+    public PlayerBulletController buletController;
     private GameObject gameObjectToDisable;
-    private SoundManager soundManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        soundManager = SoundManager.Instance;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         gameObject.SetActive(true);
 
@@ -85,7 +83,7 @@ public class BulletCollisionManager : MonoBehaviour
         // Your reflection sound logic goes here
         try
         {
-            soundManager.Play("reflect");
+            SoundManager.Play("reflect");
         }
         catch(System.Exception ex)
         {

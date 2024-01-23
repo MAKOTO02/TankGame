@@ -1,18 +1,18 @@
 using UnityEngine;
 
+[RequireComponent(typeof(EnemyBulletController))]
 public class EnemyCannonController : BaseCannonController
 {
     public Rigidbody targetRigidbody;
     protected Vector3 PlayerPosition;
     protected Vector3 PlayerVelocity;
-
-    [SerializeField] private BulletController bulletController;
-    private float BulletSpeed => bulletController?.bulletSpeed ?? 0f;
+    private float BulletSpeed;
 
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
+        BulletSpeed = GetComponent<EnemyBulletController>().bulletSpeed;
         Debug.Log($"Bullet Speed: {BulletSpeed}");
     }
 
@@ -31,11 +31,6 @@ public class EnemyCannonController : BaseCannonController
     {
         PlayerPosition = targetRigidbody.transform.position - GetComponent<Rigidbody>().transform.position;
         PlayerVelocity = targetRigidbody.velocity;
-        if (targetRigidbody == null)
-        {
-            Debug.Log("Playerのオブジェクトにリジッドボディを追加し、このスクリプトに渡してください");
-            return;
-        }
 
         float maxRange = 1.0f;
         float minRange = 0.0f;

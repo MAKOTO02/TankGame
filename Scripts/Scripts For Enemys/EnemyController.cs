@@ -7,7 +7,6 @@ public class EnemyController : MotionController
 {
     public Rigidbody targetRigidbody;
     public GameObject targetCannon;
-    private GameObject MyCannon; 
     private Vector3 PlayerPosition;
     private int mode = -1;
 
@@ -25,7 +24,6 @@ public class EnemyController : MotionController
     protected override void Start()
     {
         targetRigidbody = null;
-        MyCannon = transform.Find("Cannon").gameObject;
         base.Start();
         StartCoroutine(ModeChange());
     }
@@ -34,7 +32,7 @@ public class EnemyController : MotionController
     protected override void Update()
     {
         base.Update();
-        MyCannon.GetComponent<EnemyCannonController>().targetRigidbody = targetRigidbody;
+        GetComponent<EnemyCannonController>().targetRigidbody = targetRigidbody;
         // プレイヤーとの相対的な位置を計算.
         if(targetRigidbody != null)
         {
