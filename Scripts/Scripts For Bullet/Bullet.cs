@@ -13,12 +13,9 @@ public class Bullet : MonoBehaviour
     private GameObject explosion;
     private GameObject explosionCopy;
 
-    private SoundManager soundManager; //サウンドマネージャー
-
     // Start is called before the first frame update
     void Start()
     {
-        soundManager = SoundManager.Instance;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         ShouldExplode = false;
         explosion = (GameObject)Resources.Load("Explosion");
@@ -50,7 +47,7 @@ public class Bullet : MonoBehaviour
     public void Explode()
     {
         explosionCopy = Instantiate(explosion, transform.position, Quaternion.identity);
-        soundManager.Play("hit");       
+        SoundManager.Play("hit");       
         if(explosionCopy != null) Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
         InitiateBullet();
         GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();

@@ -16,12 +16,9 @@ public class MotionController : MonoBehaviour
     protected Rigidbody thisRigidbody;
     protected float moveInput = 0;
     protected float turnInput = 0;
-    protected Vector3 torque;
-
 
     protected virtual void Start()
     {
-        gameManager = GameManager.Instance;
         thisRigidbody = GetComponent<Rigidbody>();
         thisRigidbody.mass = 100.0f;
         Anima = GetComponent<Animator>();
@@ -33,7 +30,7 @@ public class MotionController : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (!gameManager.pausedForWating)
+        if (!GameManager.IsWaiting() && GameManager.gameIsPlaying)
         {
             Move(); Turn(); AnimationSet();
         }

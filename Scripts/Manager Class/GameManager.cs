@@ -16,13 +16,12 @@ public class GameManager : Singleton<GameManager>
     public GameObject gameOverUI;
     public GameObject mainMenuUi;
     public GameObject settingUI;
+    public static bool gameIsPlaying { get; private set; }
+    static public bool paused;
+    static public bool pausedForWating;
+    static public int Stage { get; private set; }
 
-    public bool GameIsPlaying { get; private set; }
-    public bool paused;
-
-    private static int stage;
-    public bool pausedForWating;
-
+    private static int remainingEnemys;
     IEnumerator WaitForLoadScene()
     {
         while (true)
@@ -43,7 +42,7 @@ public class GameManager : Singleton<GameManager>
     // Start is called before the first frame update
     void Start()
     {
-        stage = 0;
+        Stage = 0;
         Time.timeScale = 0.0f;
         ShowMainMenu();
         pausedForWating = false;
@@ -53,9 +52,26 @@ public class GameManager : Singleton<GameManager>
     // Update is called once per frame
     void Update()
     {
-        if (false)
-        {
+        static bool isLastStage(int stage) { return false; }    // 仮のメソッド;
+        ManageStage(isLastStage);
+    }
 
+    delegate bool Predicate(int stage);
+    void ManageStage(Predicate predicate)
+    {
+        if(remainingEnemys　== 0)
+        {
+            if (predicate(Stage))
+            {
+                Stage++;
+                // 敵の数を次のステージのものに更新する.
+                // remainingEnemys = 
+            }
+            else
+            {
+                // ゲームクリア!!!
+                // おめでておうございます.
+            }
         }
     }
 
@@ -90,21 +106,21 @@ public class GameManager : Singleton<GameManager>
     public void ShowMainMenu()
     {
         ShowUI(UIState.MainMenu);
-        GameIsPlaying = false;
+        gameIsPlaying = false;
     }
 
     public void StartGame()
     {
         ShowUI(UIState.InGame);
-        GameIsPlaying = true;
+        gameIsPlaying = true;
         Time.timeScale = 1.0f;
-        stage = 1;
+        Stage = 1;
     }
 
     public void GameOver()
     {
         ShowUI(UIState.GameOver);
-        GameIsPlaying = false;
+        gameIsPlaying = false;
     }
 
     public void SetPaused(bool paused)
@@ -117,11 +133,11 @@ public class GameManager : Singleton<GameManager>
     public void ShowSettingMenu()
     {
         ShowUI(UIState.Setting);
-        GameIsPlaying = false;
+        gameIsPlaying = false;
         Time.timeScale = 0.0f;
     }
 
-    public void EndGame()
+    static private void EndGame()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false; //ゲームプレイ終了
@@ -129,9 +145,8 @@ public class GameManager : Singleton<GameManager>
     Application.Quit();
 #endif
     }
-
-    public int GetStage()
+    static public bool IsWaiting()
     {
-        return stage;
+        return paused || pausedForWating;
     }
 }

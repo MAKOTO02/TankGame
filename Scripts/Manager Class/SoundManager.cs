@@ -18,10 +18,10 @@ public class SoundManager : Singleton<SoundManager>
     public AudioMixer audioMixer;
 
     //AudioSource（スピーカー）を同時に鳴らしたい音の数だけ用意
-    private AudioSource[] audioSourceList = new AudioSource[20];
+    static private AudioSource[] audioSourceList = new AudioSource[20];
 
     //別名(name)をキーとした管理用Dictionary
-    private Dictionary<string, SoundData> soundDictionary = new Dictionary<string, SoundData>();
+    static private Dictionary<string, SoundData> soundDictionary = new Dictionary<string, SoundData>();
 
     protected override void Awake()
     {
@@ -40,7 +40,7 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     //未使用のAudioSourceの取得 全て使用中の場合はnullを返却
-    private AudioSource GetUnusedAudioSource()
+    static private AudioSource GetUnusedAudioSource()
     {
         for (var i = 0; i < audioSourceList.Length; ++i)
         {
@@ -51,7 +51,7 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     //指定されたAudioClipを未使用のAudioSourceで再生
-    public void Play(AudioClip clip)
+    static public void Play(AudioClip clip)
     {
         var audioSource = GetUnusedAudioSource();
         if (audioSource == null) return; //再生できませんでした
@@ -60,7 +60,7 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     //指定された別名で登録されたAudioClipを再生
-    public void Play(string name)
+    static public void Play(string name)
     {
         if (soundDictionary.TryGetValue(name, out var soundData)) //管理用Dictionary から、別名で探索
         {
