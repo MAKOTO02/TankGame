@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(SphereCollider))]
 public class Bullet : MonoBehaviour
 {
+    //----- PRIVATE VARIABLES -----//
     private bool ShouldExplode;
     private GameObject explosion;
     private GameObject explosionCopy;
@@ -36,15 +37,12 @@ public class Bullet : MonoBehaviour
     {
         InitiateBullet();
     }
-
-    // 外部からdesiredSpeedを設定するメソッド
-
-    public void SetShouldExplode(bool setting)
+    void InitiateBullet()
     {
-        ShouldExplode = setting;
+        ShouldExplode = false;
+        gameObject.SetActive(false);
     }
-
-    public void Explode()
+    void Explode()
     {
         explosionCopy = Instantiate(explosion, transform.position, Quaternion.identity);
         SoundManager.Play("hit");       
@@ -53,9 +51,9 @@ public class Bullet : MonoBehaviour
         GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
         if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);
     }
-    void InitiateBullet()
+    //----- PUBLIC METHODS -----//
+    public void SetShouldExplode(bool setting)
     {
-        ShouldExplode = false;
-        gameObject.SetActive(false);
+        ShouldExplode = setting;
     }
 }

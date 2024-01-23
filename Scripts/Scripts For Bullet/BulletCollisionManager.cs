@@ -7,25 +7,20 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(SphereCollider))]
 public class BulletCollisionManager : MonoBehaviour
 {
-    // BulletCollision は弾の Active と非 Active 状態を管理し、適切なときにサウンドやエフェクトを発生させます。.
-    // Bullet のゲームオブジェクトのプレハブを作り、それにアタッチしてください.
-    // BulletオブジェクトのコライダーにPhiscMaterialをつけられるので、
-    // そこで、摩擦0,反発係数1、FrictionConbineをminimum,BounceConbineをmaximumにセットして下さい.
-
-    [SerializeField] private int durationTimes = 1;
-    private int collisionCount = 0;
+    //----- PRIVATE VARIABLES -----//
+    [SerializeField] private int durationTimes = 1; // 弾の反射回数の上限.
+    private int collisionCount;
     private Bullet bullet;
-    public PlayerBulletController buletController;
     private GameObject gameObjectToDisable;
 
     // Start is called before the first frame update
     void Start()
     {
+        collisionCount = 0;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         gameObject.SetActive(true);
 
         // 弾の特性をここで付与しておきます。
-        // このコードはより適切な場所が見つかったらそこに移します。
         PhysicMaterial ForBullet = new();
         {
             ForBullet.staticFriction = 0.0f;
@@ -81,25 +76,17 @@ public class BulletCollisionManager : MonoBehaviour
     void PlayReflectionSound()
     {
         // Your reflection sound logic goes here
-        try
-        {
-            SoundManager.Play("reflect");
-        }
-        catch(System.Exception ex)
-        {
-            Debug.Log(ex.Message);
-            Debug.Log("サウンドマネージャに反射音を設定して下さい");
-        }
+        SoundManager.Play("reflect");
     }
-    private void ResetCount()
-    {
-        collisionCount = 0;
-    }
-    private void CollisionCount()
+    void CollisionCount()
     {
         ++collisionCount;
     }
-
+    //----- PUBLIC METHODS -----//
+    public void ResetCount()
+    {
+        collisionCount = 0;
+    }
     public GameObject GetObjectToDisable()
     {
         return gameObjectToDisable;
