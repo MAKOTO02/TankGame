@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,15 +12,12 @@ public class Bullet : MonoBehaviour
 {
     //----- PRIVATE VARIABLES -----//
     private bool ShouldExplode;
-    private GameObject explosion;
-    private GameObject explosionCopy;
-
+   
     // Start is called before the first frame update
     void Start()
     {
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         ShouldExplode = false;
-        explosion = (GameObject)Resources.Load("Explosion");
     }
 
     // Update is called once per frame
@@ -44,9 +42,8 @@ public class Bullet : MonoBehaviour
     }
     void Explode()
     {
-        explosionCopy = Instantiate(explosion, transform.position, Quaternion.identity);
-        SoundManager.Play("hit");       
-        if(explosionCopy != null) Destroy(explosionCopy, explosionCopy.GetComponent<ParticleSystem>().main.duration);
+        SoundManager.Play("hit");
+        EffectManager.Instance.PlayEffect(transform.position);
         InitiateBullet();
         GameObject ObjectToDisable = GetComponent<BulletCollisionManager>().GetObjectToDisable();
         if (ObjectToDisable != null && ObjectToDisable.activeSelf) ObjectToDisable.SetActive(false);

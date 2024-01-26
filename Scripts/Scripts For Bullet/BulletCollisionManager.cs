@@ -36,16 +36,17 @@ public class BulletCollisionManager : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         CollisionCountCheck();
-        if (IsPlayerOrEnemyCollision(collision))
+        if (IsDistractiveCollision(collision))
         {
             bullet.SetShouldExplode(true);
             gameObjectToDisable = collision.gameObject;
             if (collision.gameObject.CompareTag("Player"))
             {
                 Debug.Log("ゲームオーバー");
+                GameManager.Instance.GameOver();
             }
             ResetCount();
-            Debug.Log("Player,Enemyもしくは破壊可能な障害物に当たりました");
+            Debug.Log("破壊可能な障害物に当たりました");
         }
         else
         {
@@ -59,9 +60,9 @@ public class BulletCollisionManager : MonoBehaviour
         ResetCount();
     }
 
-    bool IsPlayerOrEnemyCollision(Collision collision)
+    bool IsDistractiveCollision(Collision collision)
     {
-        return collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Player");
+        return collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Distractive");
     }
 
     void CollisionCountCheck()
@@ -85,6 +86,7 @@ public class BulletCollisionManager : MonoBehaviour
     //----- PUBLIC METHODS -----//
     public void ResetCount()
     {
+        // 弾のは発射の際に外のクラスから呼び出すので、publicにしました。
         collisionCount = 0;
     }
     public GameObject GetObjectToDisable()

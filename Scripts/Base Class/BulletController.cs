@@ -9,7 +9,7 @@ public class BulletController : MonoBehaviour
     [SerializeField] private GameObject bulletMark;   // 弾を発射する起点となる所に(砲台の子オブジェクトとして)くっつけておくオブジェクト.生成などの際に位置を参照する.
     static private GameObject bulletPrefab; // Resourcesからプレハブをロードするための仮変数.
     private static readonly int queueLimit = 20;    // メモリを使いすぎないよう、Queueの上限を決めておく。
-    private readonly Queue<GameObject> bulletQue = new(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする。
+    private readonly Queue<GameObject> bulletPool = new(queueLimit); // 場に出た弾をQueueに入れておいてリサイクルする。
     private Vector3 CannonForward;
 
     //-----PUBLICVARIABLES-----//
@@ -47,15 +47,15 @@ public class BulletController : MonoBehaviour
     }
     void RotateQueue()
     {
-        bulletCopy = bulletQue.Dequeue();
-        bulletQue.Enqueue(bulletCopy);
+        bulletCopy = bulletPool.Dequeue();
+        bulletPool.Enqueue(bulletCopy);
     }
     void GenerateBulletCopy()
     {
         if (GameManager.IsWaiting() || !GameManager.gameIsPlaying) return;
         // 今回は弾が球形なので、弾の回転は考慮せずidentityで生成.
         bulletCopy = Instantiate(bulletPrefab, bulletMark.transform.position, Quaternion.identity);
-        bulletQue.Enqueue(bulletCopy);
+        bulletPool.Enqueue(bulletCopy);
         if (gameObject.CompareTag("Player")) DontDestroyOnLoad(bulletCopy);
     }
     void Fire()
@@ -72,7 +72,7 @@ public class BulletController : MonoBehaviour
     public void RecycleFire()
     {
         // Queueに入っている弾の数が上限より小さいなら、新しく生成しQueueに追加.
-        if (bulletQue.Count < limit)
+        if (bulletPool.Count < limit)
         {
             GenerateBulletCopy();   //  バレットのコピーを生成しQueueに入れる.
             Fire(); //  弾を初期化して射出する.

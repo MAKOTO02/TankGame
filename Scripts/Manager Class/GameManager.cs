@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum UIState
 {
@@ -22,6 +23,7 @@ public class GameManager : Singleton<GameManager>
     static public int Stage { get; private set; }
 
     private static int remainingEnemys;
+    private static int lastStage = 2;
     IEnumerator WaitForLoadScene()
     {
         while (true)
@@ -52,7 +54,8 @@ public class GameManager : Singleton<GameManager>
     // Update is called once per frame
     void Update()
     {
-        static bool isLastStage(int stage) { return false; }    // 仮のメソッド;
+        remainingEnemys = GameObject.FindGameObjectsWithTag("Enemy").Length;
+        static bool isLastStage(int stage) { return stage == lastStage; }    // 仮のメソッド;
         ManageStage(isLastStage);
     }
 
@@ -61,16 +64,18 @@ public class GameManager : Singleton<GameManager>
     {
         if(remainingEnemys　== 0)
         {
-            if (predicate(Stage))
+            if (!predicate(Stage))
             {
                 Stage++;
+                // 敵の数を配列で保存しておくなら
                 // 敵の数を次のステージのものに更新する.
-                // remainingEnemys = 
             }
             else
             {
                 // ゲームクリア!!!
                 // おめでておうございます.
+                SceneManager.UnloadSceneAsync("stage" +　lastStage.ToString());
+                ShowMainMenu();
             }
         }
     }
