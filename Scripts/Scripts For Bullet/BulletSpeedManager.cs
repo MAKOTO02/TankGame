@@ -4,9 +4,11 @@ using UnityEngine;
 [RequireComponent(typeof(Bullet))]
 public class BulletSpeedManager : MonoBehaviour
 {
-    [SerializeField] private float desiredSpeed;
+    //----- PRIVATE VARIABLES -----//
+    private float desiredSpeed;
     private Rigidbody bulletBody;
     private Bullet bullet;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,10 +26,17 @@ public class BulletSpeedManager : MonoBehaviour
     void InvalidSpeedCheck()
     {
         float bulletSpeed = bulletBody.velocity.magnitude;
-        if (bulletSpeed > desiredSpeed + 1.0f || bulletSpeed < desiredSpeed - 1.0f)
+        if (bulletSpeed > desiredSpeed + 1.0f)
         {
             bullet.SetShouldExplode(true);
-            Debug.Log("速度制限に引っ掛かりました");
+            Debug.Log(bulletSpeed.ToString() + ": 速度上限に引っ掛かりました");
+            return;
+        }
+        if (bulletSpeed < desiredSpeed - 1.0f)
+        {
+            bullet.SetShouldExplode(true);
+            Debug.Log(bulletSpeed.ToString() + ": 速度下限に引っ掛かりました");
+            return;
         }
     }
 
@@ -37,7 +46,7 @@ public class BulletSpeedManager : MonoBehaviour
         newVelocity.y = 0.0f; // y成分をゼロにする
         bulletBody.velocity = newVelocity; // 速度を新しいベクトルに設定
     }
-
+    //----- PUBLIC METHODS -----//
     public void SetSpeed(float speed)
     {
         desiredSpeed = speed;

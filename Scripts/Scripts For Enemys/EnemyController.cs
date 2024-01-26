@@ -5,8 +5,10 @@ using UnityEngine;
 // EscapeとAttackの二つのモードを10秒ごとに切り替えます.
 public class EnemyController : MotionController
 {
-    public Rigidbody targetRigidbody;
-    public GameObject targetCannon;
+    //----- PRIVATE VARIABLES -----//
+    [SerializeField] private Rigidbody targetRigidbody;
+    [SerializeField] private GameObject targetCannon;
+    [SerializeField] private bool autoTarget = true;
     private Vector3 PlayerPosition;
     private int mode = -1;
 
@@ -18,8 +20,6 @@ public class EnemyController : MotionController
             yield return new WaitForSeconds(10.0f);
         }
     }
-
-
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -34,27 +34,25 @@ public class EnemyController : MotionController
         base.Update();
         GetComponent<EnemyCannonController>().targetRigidbody = targetRigidbody;
         // プレイヤーとの相対的な位置を計算.
-        if(targetRigidbody != null)
-        {
-            PlayerPosition = targetRigidbody.transform.position - thisRigidbody.transform.position;
+        if (targetRigidbody == null) return;
+        PlayerPosition = targetRigidbody.transform.position - thisRigidbody.transform.position;
 
-            if (mode == 1)
-            {
-                Attack(50.0f);
-            }
-            else if (mode == -1)
-            {
-                Escape(100.0f);
-            }
-            else
-            {
-                Debug.Log(mode);
-            }
+        if (mode == 1)
+        {
+            Attack(50.0f);
+            return;
         }
+        if (mode == -1)
+        {
+            Escape(100.0f);
+            return;
+        } 
+        Debug.Log(mode);       
     }
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
+        if (!autoTarget) return;
         if (other.gameObject.CompareTag("Player"))
         {
             targetRigidbody = other.gameObject.GetComponent<Rigidbody>();
@@ -66,7 +64,7 @@ public class EnemyController : MotionController
     /// Adjusts movement based on the player's distance.
     /// </summary>
     /// <param name="desiredDistance">The desired distance from the player.</param>
-    private void AdjustMovementBasedOnDistance(float desiredDistance)
+    void AdjustMovementBasedOnDistance(float desiredDistance)
     {
         if (PlayerPosition.magnitude > desiredDistance)
         {
@@ -82,7 +80,7 @@ public class EnemyController : MotionController
     /// Initiates an attack by turning towards the player and adjusting movement based on distance.
     /// </summary>
     /// <param name="desiredDistance">The desired distance for the attack.</param>
-    private void Attack(float desiredDistance)
+    void Attack(float desiredDistance)
     {
         TurnTo(PlayerPosition);
         AdjustMovementBasedOnDistance(desiredDistance);
@@ -91,7 +89,7 @@ public class EnemyController : MotionController
     /// Maintain a vertical orientation towards the player and perform long-range shooting.
     /// </summary>
     /// <param name="desiredDistance">The distance to be maintained.</param>
-    private void Escape(float desiredDistance)
+    void Escape(float desiredDistance)
     {
         // Face the direction that is perpendicular to the player.
         TurnTo(PlayerPosition, 90.0f);
@@ -103,17 +101,17 @@ public class EnemyController : MotionController
         {
             // Move when the player's Cannon captures the aircraft or when the player gets too close.
             moveInput = -1;
+            return;
         }
-        else if (desiredDistance > PlayerPosition.magnitude)
+        if (desiredDistance > PlayerPosition.magnitude)
         {
             // Move when the player is farther away.
             moveInput = 1;
+            return;
         }
-        else
-        {
-            // Otherwise, move randomly.
-            moveInput = Random.Range(-1.0f, 1.0f);
-        }
+        // Otherwise, move randomly.
+        moveInput = Random.Range(-1.0f, 1.0f);
+        
     }
 
     /// <summary>
